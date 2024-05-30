@@ -1,0 +1,9 @@
+## Interface: 11200
+## Title: Spirit Linker
+## Notes: Information bar for using Spirit Link
+## X-Category: Interface Enhancements
+## X-Date: 2024-05-06
+## X-Website: https://github.com/MarcelineVQ/SpiritLinker
+## Version: 1.2
+
+SpiritLinker.lua
