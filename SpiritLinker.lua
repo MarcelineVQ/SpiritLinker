@@ -103,7 +103,8 @@ function librange:InRange(unit, range, unit2)
   -- Early exit if the unit does not exist
   if not UnitExists(unit) then return nil end
   if not UnitCanAssist(unit, source) then return nil end
-  
+  if UnitIsCharmed(unit) or UnitIsCharmed(unit2) then return nil end
+
   local x1, y1, z1 = UnitPosition(source)
   local x2, y2, z2 = UnitPosition(unit)
 
@@ -397,6 +398,16 @@ local function OnEvent()
     elseif buff == "Healing Way" then
       linked.healing_way.stacks = 0
     end
+  elseif event == "PLAYER_ENTERING_WORLD" then
+    local _,engClass = UnitClass("player")
+    if engClass ~= "SHAMAN" then
+      DEFAULT_CHAT_FRAME:AddMessage("|cff36c948Spirit Linker|cffffffff is only useful to the Shaman class, the addon is now set to not load again.|r")
+      DisableAddOn("SpiritLinker")
+      linkFrame:EnableMouse(false)
+      linkFrame:SetScript("OnUpdate", nil)
+      linkFrame:SetScript("OnEvent", nil)
+      linkFrame:Hide()
+    end
   end
 end
 
@@ -405,4 +416,5 @@ linkFrame:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_BUFFS")
 linkFrame:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_BUFFS")
 linkFrame:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_PARTY")
 linkFrame:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_OTHER")
+linkFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 linkFrame:SetScript("OnEvent", OnEvent)
