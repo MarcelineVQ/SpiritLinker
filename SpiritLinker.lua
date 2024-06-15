@@ -303,6 +303,33 @@ linkFrame:SetScript("OnUpdate", function ()
       durationBar:SetBackdropColor(durationColor,0.7)
     end
     nearbyText:SetText(count)
+
+    if linked.target_name then
+      linked.healing_way.stacks = 0
+      linked.armor_buff.ancestral_fortitude = false
+      linked.armor_buff.inspiration = false
+      for i=1,40 do
+        local _,stacks,id = UnitBuff(linked.target_guid,i)
+        local spellname = SpellInfo(id)
+        if spellname then
+          if spellname == "Ancestral Fortitude" then
+            linked.armor_buff.ancestral_fortitude = true
+          elseif spellname == "Inspiration" then
+            linked.armor_buff.inspiration = true
+          elseif spellname == "Healing Way" then
+            linked.healing_way.stacks = stacks
+          end
+        end
+      end
+      if linked.armor_buff.ancestral_fortitude or linked.armor_buff.ancestral_fortitude then
+        armorBar:Show()
+      end
+      if linked.healing_way.stacks ~= 0 then
+        hw1Bar:Show()
+        hw2Bar:Show()
+        hw3Bar:Show()
+      end
+    end
   end
 end)
 
@@ -368,36 +395,6 @@ local function OnEvent()
       ResetBar(cooldownBar)
       cooldownBar:Show()
     end
-  elseif event == "CHAT_MSG_SPELL_PERIODIC_PARTY_BUFFS" or event == "CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_BUFFS" then
-    local _, _, name, buff = string.find(arg1, "^(%S+) gains ([%a%s-']+)")
-    if name ~= linked.target_name then return end
-
-    buff = string.gsub(buff,"^%s*(.-)%s$","%1")
-    debug_print("gain "..name.." "..buff)
-    if buff == "Ancestral Fortitude" then
-      linked.armor_buff.ancestral_fortitude = true
-      armorBar:Show()
-    elseif buff == "Inspiration" then
-      linked.armor_buff.inspiration = true
-      armorBar:Show()
-    elseif buff == "Healing Way" then
-      linked.healing_way.stacks = (linked.healing_way.stacks > 2) and 3 or linked.healing_way.stacks + 1
-      hw1Bar:Show()
-      hw2Bar:Show()
-      hw3Bar:Show()
-    end
-  elseif event == "CHAT_MSG_SPELL_AURA_GONE_PARTY" or event == "CHAT_MSG_SPELL_AURA_GONE_OTHER" then
-    local _, _, buff, name = string.find(arg1, "^([%a%s-']+) fades from (%a+)")
-    if name ~= linked.target_name then return end
-    buff = string.gsub(buff,"^%s*(.-)%s$","%1")
-    debug_print("lose "..name.." "..buff)
-    if buff == "Ancestral Fortitude" then
-      linked.armor_buff.ancestral_fortitude = false
-    elseif buff == "Inspiration" then
-      linked.armor_buff.inspiration = false
-    elseif buff == "Healing Way" then
-      linked.healing_way.stacks = 0
-    end
   elseif event == "PLAYER_ENTERING_WORLD" then
     local _,engClass = UnitClass("player")
     if engClass ~= "SHAMAN" then
@@ -412,9 +409,5 @@ local function OnEvent()
 end
 
 linkFrame:RegisterEvent("UNIT_CASTEVENT")
-linkFrame:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_BUFFS")
-linkFrame:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_BUFFS")
-linkFrame:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_PARTY")
-linkFrame:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_OTHER")
 linkFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 linkFrame:SetScript("OnEvent", OnEvent)
