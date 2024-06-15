@@ -190,12 +190,6 @@ linkFrame:SetBackdropColor(0, 0, 0, 0.8)
 linkFrame:SetScript("OnDragStart", function () linkFrame:StartMoving() end)
 linkFrame:SetScript("OnDragStop", function () linkFrame:StopMovingOrSizing() end)
 linkFrame:SetScript("OnClick", function () if linked.target_guid ~= "" then CastSpellByName("Spirit Link",linked.target_guid) end end)
--- linkFrame:SetScript("OnUpdate", function ()
---   local now = GetTime()
---   if now - linked.healing_way.start > 15 then
---     linked.healing_way.stacks = 0
---   end
--- end)
 
 -- Text ----------------------
 
@@ -220,13 +214,7 @@ armorBar:SetPoint("RIGHT", nearbyText, "LEFT",-5,0)
 armorBar:SetBackdrop({ bgFile = "Interface\\Addons\\SpiritLinker\\tank2" })
 armorBar:SetBackdropColor(1,1,1,0.8)
 armorBar:SetFrameLevel(3)
-armorBar:SetScript("OnUpdate", function ()
-  if linked.armor_buff.ancestral_fortitude or linked.armor_buff.inspiration then
-    this:Show()
-  else
-    this:Hide()
-  end
-end)
+armorBar:Hide()
 
 local durationBar = CreateFrame("Frame", nil, linkFrame)
 durationBar:SetWidth(barWidth)
@@ -255,7 +243,7 @@ hw1Bar:SetPoint("BOTTOMLEFT", linkFrame, "TOPLEFT")
 hw1Bar:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8" })
 hw1Bar:SetBackdropColor(HexToColors("aaaa00"),0.6)
 hw1Bar:SetFrameLevel(3)
-hw1Bar:SetScript("OnUpdate", function () if linked.healing_way.stacks > 0 then this:Show() else this:Hide() end end)
+hw1Bar:Hide()
 
 local hw2Bar = CreateFrame("Frame", nil, linkFrame)
 hw2Bar:SetWidth(barWidth/3)
@@ -264,7 +252,7 @@ hw2Bar:SetPoint("LEFT", hw1Bar, "RIGHT")
 hw2Bar:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8" })
 hw2Bar:SetBackdropColor(HexToColors("cccc00"),0.6)
 hw2Bar:SetFrameLevel(3)
-hw2Bar:SetScript("OnUpdate", function () if linked.healing_way.stacks > 1 then this:Show() else this:Hide() end end)
+hw2Bar:Hide()
 
 local hw3Bar = CreateFrame("Frame", nil, linkFrame)
 hw3Bar:SetWidth(barWidth/3)
@@ -273,8 +261,7 @@ hw3Bar:SetPoint("LEFT", hw2Bar, "RIGHT")
 hw3Bar:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8" })
 hw3Bar:SetBackdropColor(HexToColors("ffff00"),0.6)
 hw3Bar:SetFrameLevel(3)
-hw3Bar:SetScript("OnUpdate", function () if linked.healing_way.stacks > 2 then this:Show() else this:Hide() end end)
-
+hw3Bar:Hide()
 
 -- cooldownBar:SetScript("OnUpdate", function () Update(cooldownBar,arg1,20) end)
 
@@ -305,9 +292,16 @@ linkFrame:SetScript("OnUpdate", function ()
     nearbyText:SetText(count)
 
     if linked.target_name then
+      -- reset state
       linked.healing_way.stacks = 0
       linked.armor_buff.ancestral_fortitude = false
       linked.armor_buff.inspiration = false
+      hw1Bar:Hide()
+      hw2Bar:Hide()
+      hw3Bar:Hide()
+      armorBar:Hide()
+
+      -- check state
       for i=1,40 do
         local _,stacks,id = UnitBuff(linked.target_guid,i)
         local spellname = SpellInfo(id)
@@ -321,14 +315,13 @@ linkFrame:SetScript("OnUpdate", function ()
           end
         end
       end
+
       if linked.armor_buff.ancestral_fortitude or linked.armor_buff.ancestral_fortitude then
         armorBar:Show()
       end
-      if linked.healing_way.stacks ~= 0 then
-        hw1Bar:Show()
-        hw2Bar:Show()
-        hw3Bar:Show()
-      end
+      if linked.healing_way.stacks > 0 then hw1Bar:Show() end
+      if linked.healing_way.stacks > 1 then hw2Bar:Show() end
+      if linked.healing_way.stacks > 2 then hw3Bar:Show() end
     end
   end
 end)
