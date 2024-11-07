@@ -263,8 +263,6 @@ hw3Bar:SetBackdropColor(HexToColors("ffff00"),0.6)
 hw3Bar:SetFrameLevel(3)
 hw3Bar:Hide()
 
--- cooldownBar:SetScript("OnUpdate", function () Update(cooldownBar,arg1,20) end)
-
 ------------------------------
 
 linkFrame:SetScript("OnUpdate", function ()
